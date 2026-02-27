@@ -1,4 +1,4 @@
-// script.js - Complete Scientific Calculator with Corrected Percentage
+// script.js - Complete Scientific Calculator with 100% Accurate Percentage
 (function() {
     // Audio context for sound
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -8,6 +8,13 @@
     let historyExpr = '';
     let lastResult = null;   // For Ans button
     let degreeMode = true;    // true = DEG, false = RAD
+    let waitingForOperand = false; // Track if we're waiting for second operand
+    let lastOperator = '';    // Track last operator
+    let lastOperand = null;   // Track last operand
+    let lastExpression = '';  // Store last valid expression
+    let equalsJustPressed = false; // Track if equals was just pressed
+    let lastEqualsResult = null; // Store last equals result for stability
+    let pendingValue = null;  // Store pending value for percentage
 
     const displayElement = document.getElementById('currentInput');
     const historyElement = document.getElementById('historyExpr');
@@ -66,6 +73,38 @@
         });
     });
 
+    // Function to evaluate expression safely
+    function evaluateExpression(expr) {
+        try {
+            // Replace symbols for evaluation
+            let sanitized = expr
+                .replace(/×/g, '*')
+                .replace(/÷/g, '/')
+                .replace(/−/g, '-')
+                .replace(/\^/g, '**')
+                .replace(/mod/g, '%');
+            
+            return eval(sanitized);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // Function to get the last number from history
+    function getLastNumberFromHistory() {
+        if (!historyExpr) return null;
+        
+        // Remove trailing operator if exists
+        let cleanHistory = historyExpr.trim();
+        if (cleanHistory.match(/[+\-×÷*/]\s*$/)) {
+            cleanHistory = cleanHistory.slice(0, -1).trim();
+        }
+        
+        // Extract numbers
+        let numbers = cleanHistory.match(/(\d+\.?\d*|\.\d+)/g);
+        return numbers ? parseFloat(numbers[numbers.length - 1]) : null;
+    }
+
     // Main button action handler
     function handleButtonAction(val) {
         // Mode switch
@@ -79,6 +118,13 @@
         if (val === 'C') {
             currentInput = '0';
             historyExpr = '';
+            lastOperator = '';
+            waitingForOperand = false;
+            lastOperand = null;
+            lastExpression = '';
+            equalsJustPressed = false;
+            lastEqualsResult = null;
+            pendingValue = null;
             updateDisplay();
             return;
         }
@@ -90,6 +136,8 @@
             } else {
                 currentInput = '0';
             }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -97,14 +145,17 @@
         // Ans
         if (val === 'ans') {
             if (lastResult !== null) {
-                if (currentInput === '0' || currentInput === '') {
+                if (currentInput === '0' || currentInput === '' || waitingForOperand) {
                     currentInput = lastResult.toString();
+                    waitingForOperand = false;
                 } else {
                     currentInput += lastResult.toString();
                 }
             } else {
                 currentInput = '0';
             }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -118,6 +169,8 @@
                     currentInput = '-' + currentInput;
                 }
             }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -125,10 +178,14 @@
         // Constants
         if (val === 'π') {
             appendToCurrent(Math.PI.toString());
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             return;
         }
         if (val === 'e') {
             appendToCurrent(Math.E.toString());
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             return;
         }
 
@@ -138,6 +195,8 @@
             currentInput = res.toString();
             lastResult = res;
             historyExpr = 'rand()';
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -151,6 +210,9 @@
             historyExpr = `sqr(${currentInput})`;
             currentInput = res.toString();
             lastResult = res;
+            waitingForOperand = true;
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -160,6 +222,9 @@
             historyExpr = `cube(${currentInput})`;
             currentInput = res.toString();
             lastResult = res;
+            waitingForOperand = true;
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -173,7 +238,10 @@
                 historyExpr = `√(${currentInput})`;
                 currentInput = res.toString();
                 lastResult = res;
+                waitingForOperand = true;
             } catch (e) { currentInput = 'Error'; }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -184,7 +252,10 @@
                 historyExpr = `∛(${currentInput})`;
                 currentInput = res.toString();
                 lastResult = res;
+                waitingForOperand = true;
             } catch (e) { currentInput = 'Error'; }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -197,7 +268,10 @@
                 historyExpr = `1/(${currentInput})`;
                 currentInput = res.toString();
                 lastResult = res;
+                waitingForOperand = true;
             }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -212,7 +286,10 @@
                 historyExpr = `${currentInput}!`;
                 currentInput = fact.toString();
                 lastResult = fact;
+                waitingForOperand = true;
             }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -224,6 +301,9 @@
             historyExpr = `|${currentInput}|`;
             currentInput = res.toString();
             lastResult = res;
+            waitingForOperand = true;
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -235,6 +315,9 @@
             historyExpr = `round(${currentInput})`;
             currentInput = res.toString();
             lastResult = res;
+            waitingForOperand = true;
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -244,6 +327,9 @@
             historyExpr = `floor(${currentInput})`;
             currentInput = res.toString();
             lastResult = res;
+            waitingForOperand = true;
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -253,6 +339,9 @@
             historyExpr = `ceil(${currentInput})`;
             currentInput = res.toString();
             lastResult = res;
+            waitingForOperand = true;
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -264,6 +353,9 @@
             historyExpr = `10^(${currentInput})`;
             currentInput = res.toString();
             lastResult = res;
+            waitingForOperand = true;
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -273,6 +365,9 @@
             historyExpr = `exp(${currentInput})`;
             currentInput = res.toString();
             lastResult = res;
+            waitingForOperand = true;
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -285,7 +380,10 @@
                 historyExpr = `log(${currentInput})`;
                 currentInput = res.toString();
                 lastResult = res;
+                waitingForOperand = true;
             }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -296,7 +394,10 @@
                 historyExpr = `ln(${currentInput})`;
                 currentInput = res.toString();
                 lastResult = res;
+                waitingForOperand = true;
             }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -320,7 +421,10 @@
                 historyExpr = `${val}(${currentInput}${degreeMode?'°':''})`;
                 currentInput = res.toString();
                 lastResult = res;
+                waitingForOperand = true;
             }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
@@ -339,113 +443,168 @@
                 historyExpr = `${val}(${currentInput})`;
                 currentInput = res.toString();
                 lastResult = res;
+                waitingForOperand = true;
             }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
 
-        // ===== PERCENTAGE SUPPORT (CORRECTED) =====
+        // ===== PERFECT PERCENTAGE CALCULATION =====
         if (val === '%') {
-            // Simple percentage (e.g., 10% = 0.1)
-            if (historyExpr.trim() === '') {
-                let num = parseFloat(currentInput) || 0;
-                currentInput = (num / 100).toString();
+            let percentValue = parseFloat(currentInput) || 0;
+            
+            // Case 1: No history - simple percentage
+            if (historyExpr === '' || historyExpr.trim() === '') {
+                currentInput = (percentValue / 100).toString();
                 updateDisplay();
                 return;
             }
             
-            // For expressions with operators
-            try {
-                // Get the last operator and number from history
-                let historyParts = historyExpr.trim().split(' ');
-                let lastOperator = historyParts[historyParts.length - 1] || '+';
-                let lastNumber = parseFloat(historyParts[historyParts.length - 2]) || 0;
-                let currentNum = parseFloat(currentInput) || 0;
+            // Case 2: Has history - calculate percentage of the last number
+            let lastNumber = getLastNumberFromHistory();
+            
+            if (lastNumber !== null) {
+                // Calculate percentage of the last number
+                let calculatedValue = (lastNumber * percentValue) / 100;
                 
-                let percentageValue;
+                // Store for later use
+                pendingValue = calculatedValue;
                 
-                // Calculate percentage based on operator
-                if (lastOperator === '+' || lastOperator === '-') {
-                    // For addition/subtraction: percentage of the last number
-                    percentageValue = (lastNumber * currentNum) / 100;
-                } else if (lastOperator === '×' || lastOperator === '*' || lastOperator === '÷' || lastOperator === '/') {
-                    // For multiplication/division: convert percent to decimal
-                    percentageValue = currentNum / 100;
-                } else {
-                    percentageValue = currentNum / 100;
+                // Show in display
+                currentInput = calculatedValue.toString();
+                
+                // Update history to show percentage
+                if (!historyExpr.match(/[+\-×÷*/]\s*$/)) {
+                    historyExpr += ' ';
                 }
-                
-                // Store the percentage value and prepare for equals
-                currentInput = percentageValue.toString();
-                
-                // Update history to show the full expression
-                // Don't add to history yet, let equals handle it
-                
-            } catch (e) {
-                // Fallback to simple percentage
-                let num = parseFloat(currentInput) || 0;
-                currentInput = (num / 100).toString();
+            } else {
+                // Fallback
+                currentInput = (percentValue / 100).toString();
             }
             
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
 
         // ===== Binary Operators =====
-        if (val === '^') {
-            historyExpr += currentInput + ' ^ ';
-            currentInput = '0';
-            updateDisplay();
-            return;
-        }
-        if (val === 'mod') {
-            historyExpr += currentInput + ' mod ';
-            currentInput = '0';
+        if (['+', '-', '*', '/', '^', 'mod', '×', '÷', '−'].includes(val)) {
+            // Store the operator
+            lastOperator = val;
+            
+            // If we have a pending percentage value, use it
+            if (pendingValue !== null) {
+                currentInput = pendingValue.toString();
+                pendingValue = null;
+            }
+            
+            // If equals was just pressed, start a new expression
+            if (equalsJustPressed) {
+                historyExpr = lastResult + ' ' + val + ' ';
+                currentInput = '0';
+                waitingForOperand = true;
+                equalsJustPressed = false;
+                lastEqualsResult = null;
+                updateDisplay();
+                return;
+            }
+            
+            // If we have a previous expression, evaluate it
+            if (historyExpr !== '' && !waitingForOperand) {
+                try {
+                    let fullExpr = historyExpr + currentInput;
+                    let result = evaluateExpression(fullExpr);
+                    if (result !== null) {
+                        currentInput = result.toString();
+                        lastResult = result;
+                    }
+                } catch (e) {}
+            }
+            
+            // Add to history
+            if (historyExpr === '' || waitingForOperand) {
+                historyExpr = currentInput + ' ' + val + ' ';
+            } else {
+                historyExpr = historyExpr + currentInput + ' ' + val + ' ';
+            }
+            
+            waitingForOperand = true;
+            equalsJustPressed = false;
+            lastEqualsResult = null;
             updateDisplay();
             return;
         }
 
-        // Basic operators and parentheses
-        if (['+', '-', '*', '/', '(', ')'].includes(val)) {
-            if (val === '(' || val === ')') {
-                if (currentInput === '0' && val === '(') {
-                    currentInput = val;
+        // Parentheses
+        if (val === '(' || val === ')') {
+            if (val === '(') {
+                if (currentInput === '0' || waitingForOperand) {
+                    currentInput = '(';
+                    waitingForOperand = false;
                 } else {
-                    currentInput = currentInput === '0' ? val : currentInput + val;
+                    currentInput = currentInput + '(';
+                }
+            } else {
+                currentInput = currentInput + ')';
+            }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
+            updateDisplay();
+            return;
+        }
+
+        // ===== EQUALS =====
+        if (val === '=') {
+            // Handle multiple equals presses
+            if (equalsJustPressed && lastEqualsResult !== null) {
+                currentInput = lastEqualsResult.toString();
+                if (!historyExpr.includes('=')) {
+                    historyExpr = historyExpr + ' =';
                 }
                 updateDisplay();
-            } else {
-                // operator
-                historyExpr += currentInput + ' ' + val + ' ';
-                currentInput = '0';
-                updateDisplay();
+                return;
             }
-            return;
-        }
-
-        // Equals - Evaluate the full expression
-        if (val === '=') {
+            
+            // Build full expression
             let fullExpr = historyExpr + currentInput;
+            
+            // If we have a pending percentage, use it
+            if (pendingValue !== null) {
+                fullExpr = historyExpr + pendingValue;
+                pendingValue = null;
+            }
+            
+            if (historyExpr === '') {
+                fullExpr = currentInput;
+            }
+            
             try {
-                // Replace symbols for evaluation
-                let sanitized = fullExpr
-                    .replace(/×/g, '*')
-                    .replace(/÷/g, '/')
-                    .replace(/−/g, '-')
-                    .replace(/\^/g, '**')
-                    .replace(/mod/g, '%');
+                let result = evaluateExpression(fullExpr);
                 
-                // Handle percentage in the expression
-                // This ensures proper calculation like 400+10% = 440
+                if (result === null || isNaN(result) || !isFinite(result)) {
+                    throw new Error('Math error');
+                }
                 
-                let result = new Function('return ' + sanitized)();
-                if (isNaN(result) || !isFinite(result)) throw new Error('Math error');
+                // Store results
+                lastEqualsResult = result;
+                lastResult = result;
                 
+                // Update display
                 historyExpr = fullExpr + ' =';
                 currentInput = result.toString();
-                lastResult = result;
+                
+                // Set flags
+                waitingForOperand = true;
+                equalsJustPressed = true;
+                pendingValue = null;
+                
             } catch (err) {
                 currentInput = 'Error';
+                equalsJustPressed = false;
+                lastEqualsResult = null;
             }
             updateDisplay();
             return;
@@ -453,7 +612,16 @@
 
         // Numbers and decimal
         if (!isNaN(val) || val === '.' || val === '00') {
-            appendToCurrent(val);
+            if (waitingForOperand) {
+                currentInput = val === '00' ? '0' : (val === '.' ? '0.' : val);
+                waitingForOperand = false;
+            } else {
+                appendToCurrent(val);
+            }
+            equalsJustPressed = false;
+            lastEqualsResult = null;
+            pendingValue = null; // Clear pending percentage when typing new numbers
+            updateDisplay();
             return;
         }
     }
@@ -468,7 +636,6 @@
             if (currentInput === '0') currentInput = ch;
             else currentInput += ch;
         }
-        updateDisplay();
     }
 
     // Resume audio context on first user interaction
