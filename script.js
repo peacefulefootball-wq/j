@@ -1,4 +1,4 @@
-// script.js - Complete Scientific Calculator (Unchanged Functionality)
+// script.js - Complete Scientific Calculator with Corrected Percentage
 (function() {
     // Audio context for sound
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -22,29 +22,34 @@
     // Initial display
     updateDisplay();
 
-    // Play short click sound
+    // Play click sound with variation
     function playClickSound() {
         if (audioCtx.state === 'suspended') {
             audioCtx.resume().then(() => {
-                beep();
+                beepWithVariation();
             }).catch(() => {});
         } else if (audioCtx.state === 'running') {
-            beep();
+            beepWithVariation();
         }
     }
 
-    function beep() {
+    function beepWithVariation() {
         const now = audioCtx.currentTime;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
+        
+        // Random frequency between 400-1200 Hz for variety
+        const frequency = 400 + Math.random() * 800;
         osc.type = 'sine';
-        osc.frequency.value = 800;
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.frequency.value = frequency;
+        
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+        
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start(now);
-        osc.stop(now + 0.08);
+        osc.stop(now + 0.06);
     }
 
     // Attach event listeners to all buttons
@@ -61,7 +66,7 @@
         });
     });
 
-    // Main button action handler - Complete Mathematical Functions
+    // Main button action handler
     function handleButtonAction(val) {
         // Mode switch
         if (val === 'DEG/RAD') {
@@ -296,12 +301,11 @@
             return;
         }
 
-        // Trigonometric functions (with degree/radian support)
+        // Trigonometric functions
         if (['sin', 'cos', 'tan', 'csc', 'sec', 'cot'].includes(val)) {
             let num = parseFloat(currentInput);
             if (isNaN(num)) { currentInput = 'Error'; }
             else {
-                // Convert to radians if in degree mode
                 let rad = degreeMode ? num * Math.PI / 180 : num;
                 let res;
                 switch(val) {
@@ -312,7 +316,6 @@
                     case 'sec': res = 1 / Math.cos(rad); break;
                     case 'cot': res = 1 / Math.tan(rad); break;
                 }
-                // Handle potential infinite results
                 if (!isFinite(res)) res = 'Infinity';
                 historyExpr = `${val}(${currentInput}${degreeMode?'°':''})`;
                 currentInput = res.toString();
@@ -337,6 +340,53 @@
                 currentInput = res.toString();
                 lastResult = res;
             }
+            updateDisplay();
+            return;
+        }
+
+        // ===== PERCENTAGE SUPPORT (CORRECTED) =====
+        if (val === '%') {
+            // Simple percentage (e.g., 10% = 0.1)
+            if (historyExpr.trim() === '') {
+                let num = parseFloat(currentInput) || 0;
+                currentInput = (num / 100).toString();
+                updateDisplay();
+                return;
+            }
+            
+            // For expressions with operators
+            try {
+                // Get the last operator and number from history
+                let historyParts = historyExpr.trim().split(' ');
+                let lastOperator = historyParts[historyParts.length - 1] || '+';
+                let lastNumber = parseFloat(historyParts[historyParts.length - 2]) || 0;
+                let currentNum = parseFloat(currentInput) || 0;
+                
+                let percentageValue;
+                
+                // Calculate percentage based on operator
+                if (lastOperator === '+' || lastOperator === '-') {
+                    // For addition/subtraction: percentage of the last number
+                    percentageValue = (lastNumber * currentNum) / 100;
+                } else if (lastOperator === '×' || lastOperator === '*' || lastOperator === '÷' || lastOperator === '/') {
+                    // For multiplication/division: convert percent to decimal
+                    percentageValue = currentNum / 100;
+                } else {
+                    percentageValue = currentNum / 100;
+                }
+                
+                // Store the percentage value and prepare for equals
+                currentInput = percentageValue.toString();
+                
+                // Update history to show the full expression
+                // Don't add to history yet, let equals handle it
+                
+            } catch (e) {
+                // Fallback to simple percentage
+                let num = parseFloat(currentInput) || 0;
+                currentInput = (num / 100).toString();
+            }
+            
             updateDisplay();
             return;
         }
@@ -385,7 +435,9 @@
                     .replace(/\^/g, '**')
                     .replace(/mod/g, '%');
                 
-                // Use Function for safer evaluation
+                // Handle percentage in the expression
+                // This ensures proper calculation like 400+10% = 440
+                
                 let result = new Function('return ' + sanitized)();
                 if (isNaN(result) || !isFinite(result)) throw new Error('Math error');
                 

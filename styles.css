@@ -21,13 +21,13 @@ body {
     width: 100%;
     max-width: 380px;
     background: #f5f7fc;
-    border-radius: 24px; /* Smaller radius for compact look */
+    border-radius: 24px;
     box-shadow: 
         12px 12px 24px #b8b9be,
         -12px -12px 24px #ffffff,
         inset 1px 1px 4px rgba(255,255,255,0.8),
         inset -2px -2px 5px rgba(0,0,0,0.05);
-    padding: 8px 10px 6px 10px; /* MINIMAL padding top/bottom */
+    padding: 8px 10px 6px 10px;
     transition: all 0.2s ease;
 }
 
@@ -37,11 +37,11 @@ body {
     background: #eef0f5;
     border-radius: 16px;
     box-shadow: inset 2px 2px 5px #caced3, inset -2px -2px 5px #ffffff;
-    padding: 5px 10px; /* Reduced padding */
+    padding: 5px 10px;
     text-align: right;
     word-wrap: break-word;
     word-break: break-all;
-    min-height: 60px; /* Smaller height */
+    min-height: 60px;
 }
 
 .history-expression {
@@ -55,7 +55,7 @@ body {
 }
 
 .current-input {
-    font-size: 1.7rem; /* Slightly smaller */
+    font-size: 1.7rem;
     font-weight: 700;
     color: #1a2639;
     line-height: 1.1;
@@ -84,16 +84,16 @@ body {
 .button-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 4px; /* Minimal gap */
+    gap: 4px;
 }
 
 /* Modern button style - LARGER BUTTONS but reduced vertical space */
 .calc-btn {
     background: #f5f7fc;
     border: none;
-    border-radius: 14px; /* Slightly smaller radius */
-    padding: 8px 2px; /* Reduced vertical padding but kept horizontal */
-    font-size: 0.95rem; /* Slightly larger font */
+    border-radius: 14px;
+    padding: 8px 2px;
+    font-size: 0.95rem;
     font-weight: 600;
     color: #1e2b3f;
     box-shadow: 
@@ -108,7 +108,7 @@ body {
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     line-height: 1;
-    min-height: 44px; /* TALL BUTTONS but compact overall */
+    min-height: 44px;
     width: 100%;
     will-change: transform, box-shadow;
 }
@@ -149,6 +149,14 @@ body {
     font-size: 1rem;
 }
 
+/* Percent button style */
+.calc-btn[data-value="%"] {
+    color: #7b4c9e;
+    font-weight: 700;
+    background: #f0eaf5;
+    font-size: 1rem;
+}
+
 /* Button press animation */
 .calc-btn:active {
     transform: scale(0.93);
@@ -167,7 +175,7 @@ body {
     .calc-btn {
         padding: 6px 1px;
         font-size: 0.9rem;
-        min-height: 42px; /* Still tall */
+        min-height: 42px;
     }
     .calc-btn.fn-btn {
         font-size: 0.8rem;
@@ -216,7 +224,7 @@ body {
 
 /* Footer - extra compact */
 .footer {
-    margin-top: 6px; /* Minimal margin */
+    margin-top: 6px;
     text-align: center;
     font-weight: 500;
     color: #4d5a70;
