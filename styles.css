@@ -1,4 +1,4 @@
-/* styles.css - Ultra Compact & Responsive for All Mobile Devices */
+/* styles.css - Ultra Compact Height, Larger Buttons, Beautiful Design */
 * {
     margin: 0;
     padding: 0;
@@ -16,49 +16,50 @@ body {
     margin: 0;
 }
 
-/* Main calculator container - ultra compact for all mobiles */
+/* Main calculator container - EXTREMELY COMPACT HEIGHT */
 .calculator {
     width: 100%;
-    max-width: 360px;  /* Smaller for better mobile fit */
+    max-width: 380px;
     background: #f5f7fc;
-    border-radius: 28px;
+    border-radius: 24px; /* Smaller radius for compact look */
     box-shadow: 
-        16px 16px 32px #b8b9be,
-        -16px -16px 32px #ffffff,
-        inset 2px 2px 5px rgba(255,255,255,0.8),
-        inset -3px -3px 6px rgba(0,0,0,0.05);
-    padding: 14px 12px 12px 12px;
+        12px 12px 24px #b8b9be,
+        -12px -12px 24px #ffffff,
+        inset 1px 1px 4px rgba(255,255,255,0.8),
+        inset -2px -2px 5px rgba(0,0,0,0.05);
+    padding: 8px 10px 6px 10px; /* MINIMAL padding top/bottom */
     transition: all 0.2s ease;
 }
 
-/* Display area - compact */
+/* Display area - MINIMAL HEIGHT */
 .display-container {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     background: #eef0f5;
-    border-radius: 18px;
-    box-shadow: inset 3px 3px 8px #caced3, inset -3px -3px 8px #ffffff;
-    padding: 8px 12px;
+    border-radius: 16px;
+    box-shadow: inset 2px 2px 5px #caced3, inset -2px -2px 5px #ffffff;
+    padding: 5px 10px; /* Reduced padding */
     text-align: right;
     word-wrap: break-word;
     word-break: break-all;
-    min-height: 80px;
+    min-height: 60px; /* Smaller height */
 }
 
 .history-expression {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: #5d6a7e;
-    min-height: 20px;
+    min-height: 14px;
     font-weight: 400;
     letter-spacing: 0.2px;
     opacity: 0.8;
+    line-height: 1.2;
 }
 
 .current-input {
-    font-size: 1.8rem;
+    font-size: 1.7rem; /* Slightly smaller */
     font-weight: 700;
     color: #1a2639;
-    line-height: 1.2;
-    margin-top: 2px;
+    line-height: 1.1;
+    margin-top: 0;
     border: none;
     outline: none;
     background: transparent;
@@ -67,31 +68,32 @@ body {
     font-family: 'Inter', monospace;
 }
 
-/* Mode Indicator */
+/* Mode Indicator - compact */
 .mode-indicator {
     text-align: right;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 600;
     color: #0066cc;
-    margin-bottom: 6px;
-    padding-right: 5px;
-    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+    padding-right: 4px;
+    letter-spacing: 0.3px;
+    line-height: 1;
 }
 
 /* Button grid - 5 columns with tighter gap */
 .button-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 5px;
+    gap: 4px; /* Minimal gap */
 }
 
-/* Modern button style - more compact */
+/* Modern button style - LARGER BUTTONS but reduced vertical space */
 .calc-btn {
     background: #f5f7fc;
     border: none;
-    border-radius: 14px;
-    padding: 8px 2px;
-    font-size: 0.9rem;
+    border-radius: 14px; /* Slightly smaller radius */
+    padding: 8px 2px; /* Reduced vertical padding but kept horizontal */
+    font-size: 0.95rem; /* Slightly larger font */
     font-weight: 600;
     color: #1e2b3f;
     box-shadow: 
@@ -106,16 +108,17 @@ body {
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     line-height: 1;
-    min-height: 42px;
+    min-height: 44px; /* TALL BUTTONS but compact overall */
+    width: 100%;
     will-change: transform, box-shadow;
 }
 
-/* Special function buttons - smaller font */
+/* Special function buttons */
 .calc-btn.fn-btn {
     color: #0066cc;
     font-weight: 600;
     background: #ecf0f7;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
 }
 
 .calc-btn.mode-btn {
@@ -128,7 +131,7 @@ body {
 
 .calc-btn.operator-btn {
     color: #c44536;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 700;
     background: #f2f4fa;
 }
@@ -137,52 +140,66 @@ body {
     background: #1e2b3f;
     color: white;
     box-shadow: 4px 4px 8px #b0b4bb, -4px -4px 8px #ffffff, inset 0 1px 2px rgba(255,255,255,0.3);
+    font-size: 1.2rem;
 }
 
 .calc-btn.clear-btn {
     color: #d32f2f;
     font-weight: 700;
+    font-size: 1rem;
 }
 
 /* Button press animation */
 .calc-btn:active {
-    transform: scale(0.92);
+    transform: scale(0.93);
     box-shadow: 
-        1px 1px 4px #b8bcc2,
-        -1px -1px 4px #ffffff,
-        inset 2px 2px 6px rgba(0,0,0,0.08);
+        1px 1px 3px #b8bcc2,
+        -1px -1px 3px #ffffff,
+        inset 2px 2px 5px rgba(0,0,0,0.08);
 }
 
-/* Small mobile devices (below 360px) */
-@media (max-width: 340px) {
+/* Small mobile devices (below 360px) - maintain button size */
+@media (max-width: 360px) {
     .calculator {
-        max-width: 300px;
-        padding: 10px 8px;
+        max-width: 340px;
+        padding: 6px 8px 4px 8px;
     }
     .calc-btn {
         padding: 6px 1px;
+        font-size: 0.9rem;
+        min-height: 42px; /* Still tall */
+    }
+    .calc-btn.fn-btn {
         font-size: 0.8rem;
-        min-height: 36px;
+    }
+    .calc-btn.operator-btn {
+        font-size: 1.1rem;
+    }
+    .current-input {
+        font-size: 1.6rem;
+    }
+    .display-container {
+        min-height: 55px;
+        padding: 4px 8px;
+    }
+}
+
+/* Very small devices (under 300px) */
+@media (max-width: 300px) {
+    .calculator {
+        max-width: 280px;
+        padding: 5px 6px 3px 6px;
+    }
+    .calc-btn {
+        padding: 5px 1px;
+        font-size: 0.8rem;
+        min-height: 38px;
     }
     .calc-btn.fn-btn {
         font-size: 0.7rem;
     }
-    .calc-btn.operator-btn {
-        font-size: 1rem;
-    }
     .current-input {
-        font-size: 1.5rem;
-    }
-}
-
-/* Very small devices (under 280px) */
-@media (max-width: 280px) {
-    .calculator {
-        max-width: 260px;
-    }
-    .calc-btn {
-        font-size: 0.7rem;
-        min-height: 32px;
+        font-size: 1.4rem;
     }
 }
 
@@ -197,15 +214,16 @@ body {
     }
 }
 
-/* Footer */
+/* Footer - extra compact */
 .footer {
-    margin-top: 12px;
+    margin-top: 6px; /* Minimal margin */
     text-align: center;
     font-weight: 500;
     color: #4d5a70;
-    font-size: 0.75rem;
-    padding: 6px 0 2px 0;
-    border-top: 1.5px solid rgba(157, 170, 194, 0.2);
+    font-size: 0.7rem;
+    padding: 4px 0 2px 0;
+    border-top: 1px solid rgba(157, 170, 194, 0.2);
+    line-height: 1.1;
 }
 
 .footer span {

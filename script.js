@@ -1,4 +1,4 @@
-// script.js - Complete Scientific Calculator with All Functions
+// script.js - Complete Scientific Calculator (Unchanged Functionality)
 (function() {
     // Audio context for sound
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
