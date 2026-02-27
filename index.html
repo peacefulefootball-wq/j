@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>World's #1 Scientific Calculator | Mahedi Hassan Anik</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="The most advanced, precise and beautiful scientific calculator in the world. Perfect for any mathematical calculation with multiple modes and sound feedback.">
+    <meta name="keywords" content="scientific calculator, world best calculator, modern calculator, math tool, Mahedi Hassan Anik, sound calculator, precise calculation, degree radian mode">
+    <meta name="author" content="Mahedi Hassan Anik">
+    <!-- CSS Link -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Main Calculator - Ultra Compact & Responsive -->
+    <div class="calculator" role="main" aria-label="World's best scientific calculator by Mahedi Hassan Anik">
+        <!-- Display Section -->
+        <div class="display-container">
+            <div class="history-expression" id="historyExpr"></div>
+            <input type="text" class="current-input" id="currentInput" readonly value="0" aria-label="Calculator output">
+        </div>
+
+        <!-- Mode Indicator -->
+        <div class="mode-indicator" id="modeIndicator">DEG</div>
+
+        <!-- Button Grid - All Mathematical Functions Included & Optimized -->
+        <div class="button-grid" id="calcButtons">
+            <!-- Row 1: Mode & Hyperbolic -->
+            <button class="calc-btn mode-btn" data-value="DEG/RAD">DEG/RAD</button>
+            <button class="calc-btn fn-btn" data-value="sinh">sinh</button>
+            <button class="calc-btn fn-btn" data-value="cosh">cosh</button>
+            <button class="calc-btn fn-btn" data-value="tanh">tanh</button>
+            <button class="calc-btn fn-btn" data-value="rand">rand</button>
+            
+            <!-- Row 2: Trig Functions -->
+            <button class="calc-btn fn-btn" data-value="sin">sin</button>
+            <button class="calc-btn fn-btn" data-value="cos">cos</button>
+            <button class="calc-btn fn-btn" data-value="tan">tan</button>
+            <button class="calc-btn fn-btn" data-value="csc">csc</button>
+            <button class="calc-btn fn-btn" data-value="sec">sec</button>
+            
+            <!-- Row 3: More Trig & Log -->
+            <button class="calc-btn fn-btn" data-value="cot">cot</button>
+            <button class="calc-btn fn-btn" data-value="log">log</button>
+            <button class="calc-btn fn-btn" data-value="ln">ln</button>
+            <button class="calc-btn fn-btn" data-value="√">√</button>
+            <button class="calc-btn fn-btn" data-value="∛">∛</button>
+            
+            <!-- Row 4: Powers & Exponentials -->
+            <button class="calc-btn fn-btn" data-value="x^2">x²</button>
+            <button class="calc-btn fn-btn" data-value="x^3">x³</button>
+            <button class="calc-btn fn-btn" data-value="^">x^y</button>
+            <button class="calc-btn fn-btn" data-value="10^x">10^x</button>
+            <button class="calc-btn fn-btn" data-value="e^x">e^x</button>
+            
+            <!-- Row 5: Constants & More Functions -->
+            <button class="calc-btn fn-btn" data-value="π">π</button>
+            <button class="calc-btn fn-btn" data-value="e">e</button>
+            <button class="calc-btn fn-btn" data-value="!">n!</button>
+            <button class="calc-btn fn-btn" data-value="1/x">1/x</button>
+            <button class="calc-btn fn-btn" data-value="abs">|x|</button>
+            
+            <!-- Row 6: Rounding & Misc -->
+            <button class="calc-btn fn-btn" data-value="round">round</button>
+            <button class="calc-btn fn-btn" data-value="floor">floor</button>
+            <button class="calc-btn fn-btn" data-value="ceil">ceil</button>
+            <button class="calc-btn fn-btn" data-value="mod">mod</button>
+            <button class="calc-btn clear-btn" data-value="C">C</button>
+            
+            <!-- Row 7: Parentheses & Backspace -->
+            <button class="calc-btn fn-btn" data-value="(">(</button>
+            <button class="calc-btn fn-btn" data-value=")">)</button>
+            <button class="calc-btn operator-btn" data-value="/">÷</button>
+            <button class="calc-btn operator-btn" data-value="*">×</button>
+            <button class="calc-btn operator-btn" data-value="backspace">⌫</button>
+            
+            <!-- Row 8: Numbers 7-9 and Operators -->
+            <button class="calc-btn" data-value="7">7</button>
+            <button class="calc-btn" data-value="8">8</button>
+            <button class="calc-btn" data-value="9">9</button>
+            <button class="calc-btn operator-btn" data-value="-">−</button>
+            <button class="calc-btn operator-btn" data-value="+">+</button>
+            
+            <!-- Row 9: Numbers 4-6 and Equal -->
+            <button class="calc-btn" data-value="4">4</button>
+            <button class="calc-btn" data-value="5">5</button>
+            <button class="calc-btn" data-value="6">6</button>
+            <button class="calc-btn equal-btn" data-value="=">=</button>
+            <button class="calc-btn fn-btn" data-value="ans">Ans</button>
+            
+            <!-- Row 10: Numbers 1-3, 0, ., 00, ± -->
+            <button class="calc-btn" data-value="1">1</button>
+            <button class="calc-btn" data-value="2">2</button>
+            <button class="calc-btn" data-value="3">3</button>
+            <button class="calc-btn" data-value="0">0</button>
+            <button class="calc-btn" data-value=".">.</button>
+            
+            <!-- Row 11: Extra buttons for completeness -->
+            <button class="calc-btn" data-value="00">00</button>
+            <button class="calc-btn fn-btn" data-value="±">±</button>
+            <button class="calc-btn fn-btn" data-value="π">π</button>
+            <button class="calc-btn fn-btn" data-value="e">e</button>
+            <button class="calc-btn fn-btn" data-value="rand">RND</button>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <span>Mahedi Hassan Anik</span> · world's finest calculator
+        </div>
+    </div>
+
+    <!-- JavaScript Link -->
+    <script src="script.js"></script>
+    <noscript>Please enable JavaScript for the ultimate calculator experience.</noscript>
+</body>
+</html>
