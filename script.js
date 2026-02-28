@@ -15,7 +15,8 @@
     let equalsJustPressed = false; // Track if equals was just pressed
     let lastEqualsResult = null; // Store last equals result for stability
     let pendingValue = null;  // Store pending value for percentage
-    let lastOperatorIndex = 0; // Track last operator position for multiple operations
+    let pendingOperator = null; // Store operator for percentage calculation
+    let pendingBaseValue = null; // Store base value for percentage
 
     const displayElement = document.getElementById('currentInput');
     const historyElement = document.getElementById('historyExpr');
@@ -106,6 +107,15 @@
         return numbers ? parseFloat(numbers[numbers.length - 1]) : null;
     }
 
+    // Function to get the last operator from history
+    function getLastOperatorFromHistory() {
+        if (!historyExpr) return null;
+        
+        // Find the last operator
+        let operators = historyExpr.match(/[+\-×÷*/](?![^()]*\))/g);
+        return operators ? operators[operators.length - 1] : null;
+    }
+
     // Main button action handler
     function handleButtonAction(val) {
         // Mode switch
@@ -126,6 +136,8 @@
             equalsJustPressed = false;
             lastEqualsResult = null;
             pendingValue = null;
+            pendingOperator = null;
+            pendingBaseValue = null;
             updateDisplay();
             return;
         }
@@ -456,29 +468,73 @@
         if (val === '%') {
             let percentValue = parseFloat(currentInput) || 0;
             
-            // Case 1: No history - simple percentage
+            // Case 1: No history - simple percentage (10% = 0.1)
             if (historyExpr === '' || historyExpr.trim() === '') {
-                currentInput = (percentValue / 100).toString();
+                let result = percentValue / 100;
+                currentInput = result.toString();
+                historyExpr = `${percentValue}% = ${result}`;
+                lastResult = result;
                 updateDisplay();
                 return;
             }
             
-            // Case 2: Has history - calculate percentage of the last number
+            // Case 2: Has history - get last operator and number
+            let lastOperator = getLastOperatorFromHistory();
             let lastNumber = getLastNumberFromHistory();
             
             if (lastNumber !== null) {
-                // Calculate percentage of the last number
-                let calculatedValue = (lastNumber * percentValue) / 100;
+                // Calculate based on the operator
+                let calculatedValue;
                 
-                // Store for later use
-                pendingValue = calculatedValue;
-                
-                // Show in display
-                currentInput = calculatedValue.toString();
-                
-                // Update history to show percentage
-                if (!historyExpr.match(/[+\-×÷*/]\s*$/)) {
-                    historyExpr += ' ';
+                switch(lastOperator) {
+                    case '+': // 400+10% = 400 + (400*10/100) = 440
+                        calculatedValue = lastNumber * (percentValue / 100);
+                        pendingValue = calculatedValue;
+                        pendingOperator = '+';
+                        pendingBaseValue = lastNumber;
+                        currentInput = calculatedValue.toString();
+                        historyExpr = historyExpr + percentValue + '%';
+                        break;
+                        
+                    case '-': // 400-10% = 400 - (400*10/100) = 360
+                        calculatedValue = lastNumber * (percentValue / 100);
+                        pendingValue = calculatedValue;
+                        pendingOperator = '-';
+                        pendingBaseValue = lastNumber;
+                        currentInput = calculatedValue.toString();
+                        historyExpr = historyExpr + percentValue + '%';
+                        break;
+                        
+                    case '×': // 400×10% = 400 * (10/100) = 40
+                    case '*':
+                        calculatedValue = lastNumber * (percentValue / 100);
+                        pendingValue = calculatedValue;
+                        pendingOperator = '×';
+                        pendingBaseValue = lastNumber;
+                        currentInput = calculatedValue.toString();
+                        historyExpr = historyExpr + percentValue + '%';
+                        break;
+                        
+                    case '÷': // 400÷10% = 400 / (10/100) = 4000
+                    case '/':
+                        if (percentValue === 0) {
+                            currentInput = 'Error';
+                        } else {
+                            calculatedValue = lastNumber / (percentValue / 100);
+                            pendingValue = calculatedValue;
+                            pendingOperator = '÷';
+                            pendingBaseValue = lastNumber;
+                            currentInput = calculatedValue.toString();
+                            historyExpr = historyExpr + percentValue + '%';
+                        }
+                        break;
+                        
+                    default:
+                        // If no operator, treat as percentage of last number
+                        calculatedValue = lastNumber * (percentValue / 100);
+                        pendingValue = calculatedValue;
+                        currentInput = calculatedValue.toString();
+                        historyExpr = historyExpr + percentValue + '%';
                 }
             } else {
                 // Fallback
@@ -496,10 +552,37 @@
             // Store the operator
             lastOperator = val;
             
-            // If we have a pending percentage value, use it
-            if (pendingValue !== null) {
-                currentInput = pendingValue.toString();
-                pendingValue = null;
+            // If we have a pending percentage value, handle it
+            if (pendingValue !== null && pendingOperator !== null && pendingBaseValue !== null) {
+                // For cases like 400+10%, we already have the calculated value
+                // Just update history to show the full expression
+                if (pendingOperator === '+' || pendingOperator === '-') {
+                    // For + and -, the percentage is added/subtracted from the base
+                    let fullResult;
+                    if (pendingOperator === '+') {
+                        fullResult = pendingBaseValue + pendingValue;
+                    } else {
+                        fullResult = pendingBaseValue - pendingValue;
+                    }
+                    
+                    historyExpr = pendingBaseValue + ' ' + pendingOperator + ' ' + pendingValue + ' =';
+                    currentInput = fullResult.toString();
+                    lastResult = fullResult;
+                    pendingValue = null;
+                    pendingOperator = null;
+                    pendingBaseValue = null;
+                    waitingForOperand = true;
+                    equalsJustPressed = true;
+                    updateDisplay();
+                    return;
+                } else {
+                    // For × and ÷, the percentage result is the final value
+                    currentInput = pendingValue.toString();
+                    lastResult = pendingValue;
+                    pendingValue = null;
+                    pendingOperator = null;
+                    pendingBaseValue = null;
+                }
             }
             
             // If equals was just pressed, start a new expression
@@ -513,7 +596,6 @@
                 return;
             }
             
-            // IMPORTANT: Do NOT evaluate here - just build the expression
             // Update history to include current input and operator
             if (historyExpr === '' || waitingForOperand) {
                 // Starting fresh: just show the number + operator
@@ -562,14 +644,48 @@
                 return;
             }
             
+            // Handle pending percentage operations
+            if (pendingValue !== null && pendingOperator !== null && pendingBaseValue !== null) {
+                let finalResult;
+                let fullExpr;
+                
+                switch(pendingOperator) {
+                    case '+':
+                        finalResult = pendingBaseValue + pendingValue;
+                        fullExpr = pendingBaseValue + ' + ' + pendingValue + '%';
+                        break;
+                    case '-':
+                        finalResult = pendingBaseValue - pendingValue;
+                        fullExpr = pendingBaseValue + ' - ' + pendingValue + '%';
+                        break;
+                    case '×':
+                        finalResult = pendingValue;
+                        fullExpr = pendingBaseValue + ' × ' + (pendingValue / pendingBaseValue * 100) + '%';
+                        break;
+                    case '÷':
+                        finalResult = pendingValue;
+                        fullExpr = pendingBaseValue + ' ÷ ' + (100 * pendingBaseValue / pendingValue) + '%';
+                        break;
+                    default:
+                        finalResult = pendingValue;
+                        fullExpr = pendingBaseValue + ' % ' + pendingValue;
+                }
+                
+                lastEqualsResult = finalResult;
+                lastResult = finalResult;
+                historyExpr = fullExpr + ' =';
+                currentInput = finalResult.toString();
+                waitingForOperand = true;
+                equalsJustPressed = true;
+                pendingValue = null;
+                pendingOperator = null;
+                pendingBaseValue = null;
+                updateDisplay();
+                return;
+            }
+            
             // Build full expression
             let fullExpr = historyExpr + currentInput;
-            
-            // If we have a pending percentage, use it
-            if (pendingValue !== null) {
-                fullExpr = historyExpr + pendingValue;
-                pendingValue = null;
-            }
             
             // Remove trailing operator if present
             fullExpr = fullExpr.replace(/\s*[+\-×÷*/]\s*$/, '');
@@ -597,6 +713,8 @@
                 waitingForOperand = true;
                 equalsJustPressed = true;
                 pendingValue = null;
+                pendingOperator = null;
+                pendingBaseValue = null;
                 
             } catch (err) {
                 currentInput = 'Error';
@@ -618,6 +736,8 @@
             equalsJustPressed = false;
             lastEqualsResult = null;
             pendingValue = null; // Clear pending percentage when typing new numbers
+            pendingOperator = null;
+            pendingBaseValue = null;
             updateDisplay();
             return;
         }
