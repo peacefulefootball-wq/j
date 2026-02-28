@@ -15,6 +15,7 @@
     let equalsJustPressed = false; // Track if equals was just pressed
     let lastEqualsResult = null; // Store last equals result for stability
     let pendingValue = null;  // Store pending value for percentage
+    let lastOperatorIndex = 0; // Track last operator position for multiple operations
 
     const displayElement = document.getElementById('currentInput');
     const historyElement = document.getElementById('historyExpr');
@@ -512,25 +513,18 @@
                 return;
             }
             
-            // If we have a previous expression, evaluate it
-            if (historyExpr !== '' && !waitingForOperand) {
-                try {
-                    let fullExpr = historyExpr + currentInput;
-                    let result = evaluateExpression(fullExpr);
-                    if (result !== null) {
-                        currentInput = result.toString();
-                        lastResult = result;
-                    }
-                } catch (e) {}
-            }
-            
-            // Add to history
+            // IMPORTANT: Do NOT evaluate here - just build the expression
+            // Update history to include current input and operator
             if (historyExpr === '' || waitingForOperand) {
+                // Starting fresh: just show the number + operator
                 historyExpr = currentInput + ' ' + val + ' ';
             } else {
+                // Continuing an expression: add current number and operator
                 historyExpr = historyExpr + currentInput + ' ' + val + ' ';
             }
             
+            // Reset current input for next number
+            currentInput = '0';
             waitingForOperand = true;
             equalsJustPressed = false;
             lastEqualsResult = null;
@@ -576,6 +570,9 @@
                 fullExpr = historyExpr + pendingValue;
                 pendingValue = null;
             }
+            
+            // Remove trailing operator if present
+            fullExpr = fullExpr.replace(/\s*[+\-×÷*/]\s*$/, '');
             
             if (historyExpr === '') {
                 fullExpr = currentInput;
