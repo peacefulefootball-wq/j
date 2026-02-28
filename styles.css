@@ -149,6 +149,14 @@ body {
     font-size: 1rem;
 }
 
+/* Backspace button style */
+.calc-btn.backspace-btn {
+    color: #ff8c00;
+    font-weight: 700;
+    background: #fff0e0;
+    font-size: 1.1rem;
+}
+
 /* Percent button style */
 .calc-btn[data-value="%"] {
     color: #7b4c9e;
@@ -219,6 +227,9 @@ body {
     }
     .calc-btn.equal-btn:hover {
         background: #25344d;
+    }
+    .calc-btn.backspace-btn:hover {
+        background: #ffe5cc;
     }
 }
 
