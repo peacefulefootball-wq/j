@@ -1,4 +1,4 @@
-// script.js - Complete Scientific Calculator with 100% Accurate Percentage
+// script.js - Complete Scientific Calculator with Instructions Panel
 (function() {
     // Audio context for sound
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -211,6 +211,12 @@
             equalsJustPressed = false;
             lastEqualsResult = null;
             updateDisplay();
+            return;
+        }
+
+        // HELP button
+        if (val === 'help') {
+            helpModal.classList.add('show');
             return;
         }
 
@@ -763,4 +769,198 @@
     }
     document.body.addEventListener('touchstart', resumeAudio, { once: true });
     document.body.addEventListener('mousedown', resumeAudio, { once: true });
+
+    // ========== HELP MODAL FUNCTIONALITY ==========
+    const helpBtn = document.getElementById('helpBtn');
+    const helpModal = document.getElementById('helpModal');
+    const closeHelp = document.getElementById('closeHelp');
+    const helpBody = document.getElementById('helpBody');
+
+    // Get current year for dynamic copyright
+    const currentYear = new Date().getFullYear();
+
+    // Help content HTML with dynamic year
+    const helpContentHTML = `
+        <div class="help-section">
+            <h3>📊 1. BASIC OPERATIONS</h3>
+            <table class="help-table">
+                <tr><th>Button</th><th>Function</th><th>Example</th></tr>
+                <tr><td>0-9</td><td>Numbers</td><td>Press 5 → shows 5</td></tr>
+                <tr><td>.</td><td>Decimal point</td><td>5.25: 5 → . → 25</td></tr>
+                <tr><td>00</td><td>Double zero</td><td>100: 1 → 00</td></tr>
+                <tr><td>C</td><td>Clear all</td><td>Reset calculator</td></tr>
+                <tr><td>⌫</td><td>Backspace</td><td>123 → ⌫ = 12</td></tr>
+            </table>
+        </div>
+
+        <div class="help-section">
+            <h3>➕ 2. BASIC MATH</h3>
+            <table class="help-table">
+                <tr><th>Button</th><th>Function</th><th>Example</th></tr>
+                <tr><td>+</td><td>Addition</td><td>5 + 3 = 8</td></tr>
+                <tr><td>−</td><td>Subtraction</td><td>10 − 4 = 6</td></tr>
+                <tr><td>×</td><td>Multiplication</td><td>6 × 7 = 42</td></tr>
+                <tr><td>÷</td><td>Division</td><td>15 ÷ 3 = 5</td></tr>
+                <tr><td>=</td><td>Equals</td><td>Shows result</td></tr>
+            </table>
+        </div>
+
+        <div class="help-section">
+            <h3>📐 3. TRIGONOMETRY (DEG/RAD mode)</h3>
+            <div class="help-note">
+                <strong>DEG/RAD button:</strong> Toggles between Degrees and Radians
+            </div>
+            <table class="help-table">
+                <tr><th>Button</th><th>Function</th><th>Example (DEG)</th></tr>
+                <tr><td>sin</td><td>Sine</td><td>30 → sin = 0.5</td></tr>
+                <tr><td>cos</td><td>Cosine</td><td>60 → cos = 0.5</td></tr>
+                <tr><td>tan</td><td>Tangent</td><td>45 → tan = 1</td></tr>
+                <tr><td>csc</td><td>Cosecant</td><td>30 → csc = 2</td></tr>
+                <tr><td>sec</td><td>Secant</td><td>60 → sec = 2</td></tr>
+                <tr><td>cot</td><td>Cotangent</td><td>45 → cot = 1</td></tr>
+            </table>
+        </div>
+
+        <div class="help-section">
+            <h3>📈 4. LOGARITHMS & EXPONENTIALS</h3>
+            <table class="help-table">
+                <tr><th>Button</th><th>Function</th><th>Example</th></tr>
+                <tr><td>log</td><td>Log base 10</td><td>100 → log = 2</td></tr>
+                <tr><td>ln</td><td>Natural log</td><td>e → ln = 1</td></tr>
+                <tr><td>10^x</td><td>10 to power x</td><td>2 → 10^x = 100</td></tr>
+                <tr><td>e^x</td><td>e to power x</td><td>1 → e^x = 2.718</td></tr>
+                <tr><td>^</td><td>Power (x^y)</td><td>2 → ^ → 3 = 8</td></tr>
+            </table>
+        </div>
+
+        <div class="help-section">
+            <h3>🔢 5. ROOTS & POWERS</h3>
+            <table class="help-table">
+                <tr><th>Button</th><th>Function</th><th>Example</th></tr>
+                <tr><td>x²</td><td>Square</td><td>5 → x² = 25</td></tr>
+                <tr><td>x³</td><td>Cube</td><td>4 → x³ = 64</td></tr>
+                <tr><td>√</td><td>Square root</td><td>16 → √ = 4</td></tr>
+                <tr><td>∛</td><td>Cube root</td><td>27 → ∛ = 3</td></tr>
+            </table>
+        </div>
+
+        <div class="help-section">
+            <h3>💯 6. PERCENTAGE (% ) - SPECIAL</h3>
+            <div class="help-tip">
+                <strong>400 + 10%</strong> = 440 (400 + 400×10%)<br>
+                <strong>400 − 10%</strong> = 360 (400 − 400×10%)<br>
+                <strong>400 × 10%</strong> = 40 (10% of 400)<br>
+                <strong>400 ÷ 10%</strong> = 4000 (400 ÷ 0.10)
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h3>💾 7. MEMORY & CONSTANTS</h3>
+            <table class="help-table">
+                <tr><th>Button</th><th>Function</th><th>Example</th></tr>
+                <tr><td>Ans</td><td>Last answer</td><td>5+3=8 → Ans+2=10</td></tr>
+                <tr><td>π</td><td>Pi (3.14159)</td><td>π × 10 = 31.4159</td></tr>
+                <tr><td>e</td><td>Euler's number</td><td>e² = 7.389</td></tr>
+                <tr><td>rand</td><td>Random number</td><td>rand = 0.456</td></tr>
+            </table>
+        </div>
+
+        <div class="help-section">
+            <h3>🔄 8. ROUNDING FUNCTIONS</h3>
+            <table class="help-table">
+                <tr><th>Button</th><th>Function</th><th>Example</th></tr>
+                <tr><td>round</td><td>Nearest integer</td><td>3.7 → round = 4</td></tr>
+                <tr><td>floor</td><td>Round down</td><td>3.7 → floor = 3</td></tr>
+                <tr><td>ceil</td><td>Round up</td><td>3.2 → ceil = 4</td></tr>
+                <tr><td>abs</td><td>Absolute value</td><td>-5 → abs = 5</td></tr>
+            </table>
+        </div>
+
+        <div class="help-section">
+            <h3>⚡ 9. SPECIAL FUNCTIONS</h3>
+            <table class="help-table">
+                <tr><th>Button</th><th>Function</th><th>Example</th></tr>
+                <tr><td>n!</td><td>Factorial</td><td>5 → n! = 120</td></tr>
+                <tr><td>1/x</td><td>Reciprocal</td><td>4 → 1/x = 0.25</td></tr>
+                <tr><td>mod</td><td>Modulus</td><td>10 mod 3 = 1</td></tr>
+                <tr><td>±</td><td>Toggle sign</td><td>5 → ± = -5</td></tr>
+                <tr><td>( )</td><td>Parentheses</td><td>(2+3)×4 = 20</td></tr>
+            </table>
+        </div>
+
+        <div class="help-section">
+            <h3>🎯 10. PRO TIPS</h3>
+            <div class="help-tip">
+                <strong>Chain Calculations:</strong> 5 + 3 = 8 → then + 2 = 10<br>
+                <strong>Percentage Chain:</strong> 500 + 20% = 600 → then − 10% = 540<br>
+                <strong>Complex Equation:</strong> sin(30°) + cos(60°) = 1<br>
+                <strong>4th Root:</strong> 16 → ^ → ( → 1 → ÷ → 4 → ) → = 2
+            </div>
+        </div>
+
+        <div class="help-section">
+            <h3>⚠️ 11. TROUBLESHOOTING</h3>
+            <table class="help-table">
+                <tr><th>Problem</th><th>Solution</th></tr>
+                <tr><td>Error</td><td>Press C, start over</td></tr>
+                <tr><td>Infinity</td><td>Check division by zero</td></tr>
+                <tr><td>undef</td><td>Use positive numbers for log</td></tr>
+                <tr><td>Wrong result</td><td>Check DEG/RAD mode</td></tr>
+                <tr><td>No sound</td><td>Press any button again</td></tr>
+            </table>
+        </div>
+
+        <div class="help-section">
+            <h3>⌨️ 12. KEYBOARD SHORTCUTS</h3>
+            <table class="help-table">
+                <tr><th>Button</th><th>Keyboard</th></tr>
+                <tr><td>Numbers</td><td>0-9</td></tr>
+                <tr><td>Add</td><td>+</td></tr>
+                <tr><td>Subtract</td><td>-</td></tr>
+                <tr><td>Multiply</td><td>*</td></tr>
+                <tr><td>Divide</td><td>/</td></tr>
+                <tr><td>Clear</td><td>Esc or C</td></tr>
+                <tr><td>Backspace</td><td>← or Delete</td></tr>
+            </table>
+        </div>
+
+        <div class="help-footer" style="text-align: center; margin-top: 20px; color: #666;">
+            <p>World's #1 Scientific Calculator by <strong>Mahedi Hassan Anik</strong></p>
+            <p>© ${currentYear} All Rights Reserved</p>
+        </div>
+    `;
+
+    // Load help content
+    helpBody.innerHTML = helpContentHTML;
+
+    // Show help modal
+    helpBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        playClickSound();
+        helpModal.classList.add('show');
+    });
+
+    // Close help modal
+    closeHelp.addEventListener('click', function() {
+        helpModal.classList.remove('show');
+    });
+
+    // Close modal when clicking outside
+    helpModal.addEventListener('click', function(e) {
+        if (e.target === helpModal) {
+            helpModal.classList.remove('show');
+        }
+    });
+
+    // Prevent closing when clicking inside content
+    document.querySelector('.help-content').addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+
+    // Handle Escape key to close help modal
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && helpModal.classList.contains('show')) {
+            helpModal.classList.remove('show');
+        }
+    });
 })();
