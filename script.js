@@ -21,11 +21,174 @@
     const displayElement = document.getElementById('currentInput');
     const historyElement = document.getElementById('historyExpr');
     const modeIndicator = document.getElementById('modeIndicator');
+    const digitCounterElement = document.getElementById('digitCounter');
+
+    // Function to count digits in a number
+    function countDigits(num) {
+        if (num === 'Error' || num === 'Infinity' || num === 'undef' || num === 'NaN') {
+            return 0;
+        }
+        
+        let numStr = num.toString();
+        
+        // Remove negative sign, decimal point, and commas for counting
+        let cleanStr = numStr.replace(/[-,.]/g, '');
+        
+        // Handle scientific notation
+        if (numStr.includes('e') || numStr.includes('E')) {
+            return 'Sci';
+        }
+        
+        return cleanStr.length;
+    }
+
+    // Function to format number with commas
+    function formatNumberWithCommas(num) {
+        // If it's not a valid number, return as is
+        if (num === 'Error' || num === 'Infinity' || num === 'undef' || num === 'NaN') {
+            return num;
+        }
+        
+        // Convert to string and handle scientific notation
+        let numStr = num.toString();
+        
+        // Check if it's a number with decimal point
+        if (numStr.includes('e') || numStr.includes('E')) {
+            // Scientific notation - don't format
+            return numStr;
+        }
+        
+        // Split into integer and decimal parts
+        let parts = numStr.split('.');
+        let integerPart = parts[0];
+        let decimalPart = parts[1] || '';
+        
+        // Check if it's a valid number (including negative)
+        if (isNaN(parseFloat(integerPart)) && integerPart !== '-') {
+            return numStr;
+        }
+        
+        // Handle negative numbers
+        let isNegative = integerPart.startsWith('-');
+        if (isNegative) {
+            integerPart = integerPart.substring(1);
+        }
+        
+        // Add commas to integer part
+        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        
+        // Reconstruct the number
+        let formatted = (isNegative ? '-' : '') + integerPart;
+        if (decimalPart) {
+            formatted += '.' + decimalPart;
+        }
+        
+        return formatted;
+    }
+
+    // Function to remove commas from formatted number
+    function removeCommas(str) {
+        return str.replace(/,/g, '');
+    }
+
+    // Function to truncate number if too long
+    function truncateNumber(num, maxDigits = 12) {
+        if (num === 'Error' || num === 'Infinity' || num === 'undef' || num === 'NaN') {
+            return num;
+        }
+        
+        let numStr = num.toString();
+        
+        // Check if it's scientific notation
+        if (numStr.includes('e') || numStr.includes('E')) {
+            return numStr; // Keep scientific notation as is
+        }
+        
+        // Count digits (excluding decimal point and negative sign)
+        let digitCount = countDigits(numStr);
+        
+        if (digitCount <= maxDigits) {
+            return numStr;
+        }
+        
+        // Need to truncate
+        let parts = numStr.split('.');
+        let integerPart = parts[0];
+        let decimalPart = parts[1] || '';
+        
+        // Handle negative numbers
+        let isNegative = integerPart.startsWith('-');
+        if (isNegative) {
+            integerPart = integerPart.substring(1);
+        }
+        
+        // Calculate how many digits we can keep
+        let integerDigits = integerPart.length;
+        let availableForDecimal = maxDigits - integerDigits;
+        
+        if (availableForDecimal <= 0) {
+            // Too many integer digits, convert to scientific notation
+            let numFloat = parseFloat(numStr);
+            return numFloat.toExponential(6);
+        }
+        
+        // Truncate decimal part
+        if (decimalPart.length > availableForDecimal) {
+            decimalPart = decimalPart.substring(0, availableForDecimal);
+        }
+        
+        // Reconstruct
+        let truncated = (isNegative ? '-' : '') + integerPart;
+        if (decimalPart.length > 0) {
+            truncated += '.' + decimalPart;
+        }
+        
+        return truncated;
+    }
+
+    // Function to update digit counter
+    function updateDigitCounter() {
+        if (!digitCounterElement) return;
+        
+        let digitCount = countDigits(currentInput);
+        let maxDigits = 12;
+        
+        if (digitCount === 'Sci') {
+            digitCounterElement.innerHTML = '<span style="color:#2196f3;">🔬 Sci</span>';
+        } else if (digitCount <= maxDigits) {
+            digitCounterElement.innerHTML = `📊 ${digitCount}/${maxDigits}`;
+        } else {
+            digitCounterElement.innerHTML = `<span style="color:#f44336;">⚠️ ${digitCount}/${maxDigits}</span>`;
+        }
+    }
 
     function updateDisplay() {
-        displayElement.value = currentInput;
+        // Truncate if too long
+        let displayValue = currentInput;
+        if (currentInput !== 'Error' && currentInput !== 'Infinity' && 
+            currentInput !== 'undef' && currentInput !== 'NaN' && 
+            !currentInput.includes('e')) {
+            
+            let digitCount = countDigits(currentInput);
+            if (digitCount > 12) {
+                displayValue = truncateNumber(currentInput, 12);
+            }
+        }
+        
+        // Format with commas
+        if (displayValue !== 'Error' && displayValue !== 'Infinity' && 
+            displayValue !== 'undef' && displayValue !== 'NaN' && 
+            !displayValue.includes('e') && !isNaN(parseFloat(displayValue))) {
+            displayElement.value = formatNumberWithCommas(displayValue);
+        } else {
+            displayElement.value = displayValue;
+        }
+        
         historyElement.innerText = historyExpr;
         modeIndicator.innerText = degreeMode ? 'DEG' : 'RAD';
+        
+        // Update digit counter
+        updateDigitCounter();
     }
 
     // Initial display
@@ -78,8 +241,11 @@
     // Function to evaluate expression safely
     function evaluateExpression(expr) {
         try {
+            // Remove commas from the expression before evaluation
+            let exprWithoutCommas = removeCommas(expr);
+            
             // Replace symbols for evaluation
-            let sanitized = expr
+            let sanitized = exprWithoutCommas
                 .replace(/×/g, '*')
                 .replace(/÷/g, '/')
                 .replace(/−/g, '-')
@@ -102,6 +268,9 @@
             cleanHistory = cleanHistory.slice(0, -1).trim();
         }
         
+        // Remove commas from history before extracting numbers
+        cleanHistory = removeCommas(cleanHistory);
+        
         // Extract numbers
         let numbers = cleanHistory.match(/(\d+\.?\d*|\.\d+)/g);
         return numbers ? parseFloat(numbers[numbers.length - 1]) : null;
@@ -118,6 +287,12 @@
 
     // Main button action handler
     function handleButtonAction(val) {
+        // Remove commas from currentInput before processing
+        if (currentInput !== 'Error' && currentInput !== 'Infinity' && 
+            currentInput !== 'undef' && currentInput !== 'NaN') {
+            currentInput = removeCommas(currentInput);
+        }
+
         // Mode switch
         if (val === 'DEG/RAD') {
             degreeMode = !degreeMode;
@@ -299,6 +474,9 @@
         if (val === '!') {
             let num = parseInt(currentInput);
             if (isNaN(num) || num < 0) { currentInput = 'NaN'; }
+            else if (num > 170) { 
+                currentInput = 'Infinity'; 
+            }
             else {
                 let fact = 1;
                 for (let i = 2; i <= num; i++) fact *= i;
@@ -701,7 +879,9 @@
             }
             
             try {
-                let result = evaluateExpression(fullExpr);
+                // Remove commas from the expression before evaluation
+                let exprWithoutCommas = removeCommas(fullExpr);
+                let result = evaluateExpression(exprWithoutCommas);
                 
                 if (result === null || isNaN(result) || !isFinite(result)) {
                     throw new Error('Math error');
