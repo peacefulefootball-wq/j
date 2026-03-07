@@ -1,0 +1,6 @@
+# robots.txt for etype.netlify.app
+User-agent: *
+Allow: /
+Sitemap: https://etype.netlify.app/sitemap.xml
+
+# Disallow admin or private areas (none in this case)
